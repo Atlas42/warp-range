@@ -13,6 +13,7 @@ async-stream = "0.3"
 tokio = { version = "1.42" }
 hyper = "0.14"
 warp = "0.3"
+headers = "0.3"
 
 [target.'example.hello'.dependencies]
 tokio = { version = "1.42.0", features = ["full"]}

@@ -22,7 +22,7 @@
 //!         warp::path("getvideo")
 //!         .and(warp::path::end())
 //!         .and(filter_range())
-//!         .and_then(move |range_header| get_range(range_header, test_video, "video/mp4"))
+//!         .and_then(move |range_header| get_range(range_header, test_video, "video/mp4"));
 //! 
 //!     let route_static = dir(".");
 //!     
@@ -38,6 +38,9 @@
 use async_stream::stream;
 use std::{
     cmp::min, io::SeekFrom, num::ParseIntError
+};
+use headers::{
+    HeaderMapExt, LastModified
 };
 use tokio::io::{
     AsyncReadExt, AsyncSeekExt
@@ -138,6 +141,11 @@ async fn internal_get_range(range_header: Option<String>, file: &str, content_ty
     header_map.insert("Accept-Ranges", HeaderValue::from_str("bytes").unwrap());
     header_map.insert("Content-Range", HeaderValue::from_str(&format!("bytes {}-{}/{}", start_range, end_range, size)).unwrap());
     header_map.insert("Content-Length", HeaderValue::from(byte_count));
+
+    if let Ok(modified) = metadata.modified() {
+        header_map.typed_insert(LastModified::from(modified));
+    }
+
     headers.extend(header_map);
 
     if range_header.is_some() {
